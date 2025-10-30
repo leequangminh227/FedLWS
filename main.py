@@ -17,6 +17,19 @@ from collections import Counter
 if __name__ == '__main__':
 
     args = args_parser()
+    
+    # Neu chon compare, chay script compare
+    if args.server_method == 'compare':
+        print("\n" + "="*70)
+        print("COMPARE MODE: Running both FedAvg and FedLWS")
+        print("="*70)
+        print("\nRedirecting to compare_algorithms.py...")
+        print("Please run: python compare_algorithms.py")
+        print("\nOr run directly with parameters:")
+        print("python compare_algorithms.py --T {} --node_num {} --dataset {} --local_model {}".format(
+            args.T, args.node_num, args.dataset, args.local_model))
+        print("\n" + "="*70 + "\n")
+        exit(0)
 
     # Set random seeds
     setup_seed(args.random_seed)

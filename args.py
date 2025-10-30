@@ -48,7 +48,7 @@ def args_parser():
 
     # Server function
     parser.add_argument('--server_method', type=str, default='fedlws',
-                        help="fedavg, fedlws")
+                        help="fedavg, fedlws, compare")
     parser.add_argument('--server_valid_ratio', type=float, default=0.02, 
                     help="the ratio of proxy dataset in the central server")
     parser.add_argument('--a', type=int, default=0.1,

@@ -29,7 +29,9 @@ class Node(object):
         else:
             self.local_data, self.validate_set = self.train_val_split(local_data, train_set, self.valid_ratio)
         
-        self.model = init_model(self.args.local_model, self.args).cuda()
+        # Support both CPU and CUDA
+        self.device = torch.device('cuda' if torch.cuda.is_available() and args.device != 'cpu' else 'cpu')
+        self.model = init_model(self.args.local_model, self.args).to(self.device)
         self.optimizer = init_optimizer(self.num_id, self.model, args)
         
        

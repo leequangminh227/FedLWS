@@ -27,12 +27,15 @@ def Client_update(args, client_nodes, central_node):
     if args.client_method == 'local_train':
         client_losses = []
         for i in range(len(client_nodes)):
+            print(f'    [Client {i+1}/{len(client_nodes)}] Training...', end='', flush=True)
             epoch_losses = []
             for epoch in range(args.E):
                 loss = client_localTrain(args, client_nodes[i])
                 epoch_losses.append(loss)
-            client_losses.append(sum(epoch_losses)/len(epoch_losses))
-            train_loss = sum(client_losses)/len(client_losses)
+            avg_loss = sum(epoch_losses)/len(epoch_losses)
+            client_losses.append(avg_loss)
+            print(f' Loss: {avg_loss:.4f}', flush=True)
+        train_loss = sum(client_losses)/len(client_losses)
             
     else:
         raise ValueError('Undefined server method...')
@@ -63,6 +66,7 @@ def DKL(_p, _q):
 # Vanilla local training
 def client_localTrain(args, node, loss = 0.0):
     node.model.train()
+    device = getattr(node, 'device', torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
 
     loss = 0.0
     train_loader = node.local_data  # iid
@@ -70,7 +74,7 @@ def client_localTrain(args, node, loss = 0.0):
         # zero_grad
         node.optimizer.zero_grad()
         # train model
-        data, target = data.cuda(), target.cuda()
+        data, target = data.to(device), target.to(device)
         # print(data.shape)
         # exit()
         output_local = node.model(data)
@@ -87,6 +91,7 @@ def client_localTrain(args, node, loss = 0.0):
 # FedProx
 def client_fedprox(global_model_param, args, node, loss = 0.0):
     node.model.train()
+    device = getattr(node, 'device', torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
     # for name, param in node.model.named_parameters():
     #     if "layers.4" in name:
     #         param.requires_grad = False
@@ -96,7 +101,7 @@ def client_fedprox(global_model_param, args, node, loss = 0.0):
         # zero_grad
         node.optimizer.zero_grad()
         # train model
-        data, target = data.cuda(), target.cuda()
+        data, target = data.to(device), target.to(device)
         output_local = node.model(data)
 
         loss_local =  F.cross_entropy(output_local, target)

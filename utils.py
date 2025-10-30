@@ -183,7 +183,8 @@ class PerturbedGradientDescent(Optimizer):
 ##############################################################################
 
 def validate(args, node, which_dataset = 'validate'):
-    node.model.cuda().eval() 
+    device = getattr(node, 'device', torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+    node.model.to(device).eval() 
     if which_dataset == 'validate':
         test_loader = node.validate_set
     elif which_dataset == 'local':
@@ -194,7 +195,7 @@ def validate(args, node, which_dataset = 'validate'):
     correct = 0.0
     with torch.no_grad():
         for idx, (data, target) in enumerate(test_loader):
-            data, target = data.cuda(), target.cuda()
+            data, target = data.to(device), target.to(device)
             output = node.model(data)
             pred = output.argmax(dim=1)
             correct += pred.eq(target.view_as(pred)).sum().item()
@@ -202,7 +203,8 @@ def validate(args, node, which_dataset = 'validate'):
     return acc
 
 def testloss(args, node, which_dataset = 'validate'):
-    node.model.cuda().eval()  
+    device = getattr(node, 'device', torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+    node.model.to(device).eval()  
     if which_dataset == 'validate':
         test_loader = node.validate_set
     elif which_dataset == 'local':
@@ -213,7 +215,7 @@ def testloss(args, node, which_dataset = 'validate'):
     loss = []
     with torch.no_grad():
         for idx, (data, target) in enumerate(test_loader):
-            data, target = data.cuda(), target.cuda()
+            data, target = data.to(device), target.to(device)
             output = node.model(data)
             loss_local =  F.cross_entropy(output, target, reduction='mean')
             loss.append(loss_local.item())
@@ -222,7 +224,8 @@ def testloss(args, node, which_dataset = 'validate'):
 
 
 def testloss_with_param(args, node, param, which_dataset = 'validate'):
-    node.model.cuda().eval()  
+    device = getattr(node, 'device', torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+    node.model.to(device).eval()  
     if which_dataset == 'validate':
         test_loader = node.validate_set
     elif which_dataset == 'local':
@@ -233,7 +236,7 @@ def testloss_with_param(args, node, param, which_dataset = 'validate'):
     loss = []
     with torch.no_grad():
         for idx, (data, target) in enumerate(test_loader):
-            data, target = data.cuda(), target.cuda()
+            data, target = data.to(device), target.to(device)
             output = node.model.forward_with_param(data, param)
             loss_local =  F.cross_entropy(output, target, reduction='mean')
             loss.append(loss_local.item())

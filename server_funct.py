@@ -79,6 +79,8 @@ def Server_update(args, central_node, client_nodes, select_list, size_weights,dk
 
 # Fedlws 
 def fedlws(args,parameters, central_node,list_nums_local_data, dks=None,outs=None):
+    # Detect device
+    device = getattr(central_node, 'device', torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
    
     param=central_node.model.state_dict()
     global_params = copy.deepcopy(param)
@@ -100,35 +102,35 @@ def fedlws(args,parameters, central_node,list_nums_local_data, dks=None,outs=Non
 
         cur_w=[]
         last_w=[]
-        l=torch.tensor([]).cuda()
-        l_last=torch.tensor([]).cuda()
+        l=torch.tensor([]).to(device)
+        l_last=torch.tensor([]).to(device)
         for name_param in parameters[0]:
             l=torch.cat((l,fedavg_global_params[name_param].reshape(-1)))
             l_last=torch.cat((l_last,global_params[name_param].reshape(-1)))
             if ("1.fn.net.3.bias" in name_param) or (name_param=="mlp_head.1.bias") or (name_param =="mlp_head.0.bias"):
                 cur_w.append(l)
                 last_w.append(l_last)
-                l=torch.tensor([]).cuda()
-                l_last=torch.tensor([]).cuda()
+                l=torch.tensor([]).to(device)
+                l_last=torch.tensor([]).to(device)
         clients_w=[]
         for i in range(len(parameters)):
             client_w=[]
-            l_client=torch.tensor([]).cuda()
+            l_client=torch.tensor([]).to(device)
             for name_param in parameters[0]:
                 l_client=torch.cat((l_client,parameters[i][name_param].reshape(-1)))
                 # a=layer_cossim[i][name_param]
                 if ("1.fn.net.3.bias" in name_param) or (name_param=="mlp_head.1.bias") or (name_param =="mlp_head.0.bias"):
                     client_w.append(l_client)
                     # a=torch.tensor(0).cuda().float()
-                    l_client=torch.tensor([]).cuda()
+                    l_client=torch.tensor([]).to(device)
             clients_w.append(client_w)
             
     else:
 
         cur_w=[]
         last_w=[]
-        l=torch.tensor([]).cuda()
-        l_last=torch.tensor([]).cuda()
+        l=torch.tensor([]).to(device)
+        l_last=torch.tensor([]).to(device)
         for name_param in parameters[0]:
             # print(name_param)
             l=torch.cat((l,fedavg_global_params[name_param].reshape(-1)))
@@ -140,19 +142,19 @@ def fedlws(args,parameters, central_node,list_nums_local_data, dks=None,outs=Non
                 # print(name_param)
                 # print(l.shape)
                 # a=torch.tensor(0).cuda().float()
-                l=torch.tensor([]).cuda()
-                l_last=torch.tensor([]).cuda()
+                l=torch.tensor([]).to(device)
+                l_last=torch.tensor([]).to(device)
         clients_w=[]
         for i in range(len(parameters)):
             client_w=[]
-            l_client=torch.tensor([]).cuda()
+            l_client=torch.tensor([]).to(device)
             for name_param in parameters[0]:
                 l_client=torch.cat((l_client,parameters[i][name_param].reshape(-1)))
                 # a=layer_cossim[i][name_param]
                 if "bias" in name_param:
                     client_w.append(l_client)
                     # a=torch.tensor(0).cuda().float()
-                    l_client=torch.tensor([]).cuda()
+                    l_client=torch.tensor([]).to(device)
             clients_w.append(client_w)
 
     layer_gammas=[]
