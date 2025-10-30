@@ -58,6 +58,9 @@ def run_algorithm(args, algorithm_name):
     train_loss_recorder = []
     time_recorder = []
     
+    # Start timing
+    start_time = time.perf_counter()
+    
     # Training loop
     for rounds in range(args.T):
         torch.cuda.empty_cache()
